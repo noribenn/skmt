@@ -1,93 +1,55 @@
 const http = require('http');
 const querystring = require('querystring');
-const discord = require('discord.js');
-const client = new discord.Client();
+const axios = require("axios");
+const Discord = require("discord.js");
+const client = new Discord.Client();
 
-// HTTPサーバー：起動維持用（Renderに対応）
+// HTTPサーバー（Render 起動維持用）
 const PORT = process.env.PORT || 3000;
-http.createServer(function (req, res) {
-  if (req.method === 'POST') {
-    let data = "";
-    req.on('data', function (chunk) {
-      data += chunk;
-    });
-    req.on('end', function () {
-      if (!data) {
-        res.end("No post data");
-        return;
-      }
-      const dataObject = querystring.parse(data);
-      console.log("post:" + dataObject.type);
-      if (dataObject.type === "wake") {
-        console.log("Woke up in post");
-        res.end();
-        return;
-      }
-      res.end();
-    });
-  } else if (req.method === 'GET') {
-    res.writeHead(200, { 'Content-Type': 'text/plain' });
-    res.end('Discord Bot is active now\n');
-  }
-}).listen(PORT, () => {
-  console.log(`HTTPサーバー起動: ポート ${PORT} で待機中`);
-});
+http.createServer((req, res) => {
+  res.writeHead(200, { 'Content-Type': 'text/plain' });
+  res.end('Bot is alive!');
+}).listen(PORT);
+
+// 環境変数からトークン取得
+const DISCORD_TOKEN = process.env.DISCORD_BOT_TOKEN;
+const HF_API_TOKEN = process.env.HF_API_TOKEN;
 
 // BOT起動時
-client.on('ready', () => {
-  console.log('Bot準備完了～');
-  client.user.setPresence({ activity: { name: 'クッキークリッカー' } });
+client.on("ready", () => {
+  console.log("Bot準備完了～");
+  client.user.setPresence({ activity: { name: 'GPT-2でおしゃべり中' } });
 });
 
 // メッセージ受信時
-client.on('message', message => {
-  if (message.author.id === client.user.id || message.author.bot) {
-    return;
-  }
+client.on("message", async (message) => {
+  if (message.author.bot) return;
 
-  // メンションされたときの応答（ランダム）
-  if (message.mentions.has(client.user)) {
-    const replies = [
-      "なんでご飯呼んでくれなかったの？",
-      "なんでマック行くとき声かけてくれなかったの？"
-    ];
-    const reply = replies[Math.floor(Math.random() * replies.length)];
-    sendReply(message, reply);
-    return;
-  }
+  const prompt = message.content;
 
-  // 特定のキーワード応答
-  if (message.content.match(/にゃ～ん|にゃーん/)) {
-    const text = "にゃ～ん";
-    sendMsg(message.channel.id, text);
-    return;
+  try {
+    const response = await axios.post(
+      "https://api-inference.huggingface.co/models/gpt2",
+      { inputs: prompt },
+      {
+        headers: {
+          Authorization: `Bearer ${HF_API_TOKEN}`,
+        },
+        timeout: 20000, // 応答遅延対策
+      }
+    );
+
+    const reply = response.data[0]?.generated_text || "うまく返せなかったよ～";
+    message.channel.send(reply);
+  } catch (err) {
+    console.error("GPTエラー:", err.response?.data || err.message);
+    message.channel.send("⚠ GPTの応答でエラーが発生したよ！");
   }
 });
 
-// トークンが設定されていない場合
-if (!process.env.DISCORD_BOT_TOKEN) {
-  console.log('DISCORD_BOT_TOKENが設定されていません。');
-  process.exit(0);
+// Discord BOTログイン
+if (!DISCORD_TOKEN) {
+  console.log("DISCORD_BOT_TOKEN が設定されていません。");
+  process.exit(1);
 }
-
-// BOTログイン
-client.login(process.env.DISCORD_BOT_TOKEN);
-
-// リプライ送信関数
-function sendReply(message, text) {
-  message.reply(text)
-    .then(() => console.log("リプライ送信: " + text))
-    .catch(console.error);
-}
-
-// 通常メッセージ送信関数
-function sendMsg(channelId, text, option = {}) {
-  const channel = client.channels.cache.get(channelId);
-  if (channel) {
-    channel.send(text, option)
-      .then(() => console.log("メッセージ送信: " + text + JSON.stringify(option)))
-      .catch(console.error);
-  } else {
-    console.error("チャンネルが見つかりません: " + channelId);
-  }
-}
+client.login(DISCORD_TOKEN);
