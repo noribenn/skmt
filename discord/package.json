@@ -1,15 +1,17 @@
 {
-  "name": "gpt2-discord-bot",
+  "name": "skmt-bot",
   "version": "1.0.0",
+  "description": "Discord bot powered by Render",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
   },
   "dependencies": {
     "discord.js": "^12.5.3",
-    "axios": "^1.6.8"
+    "querystring": "^0.2.0"
   },
   "engines": {
     "node": "14.x"
-  }
+  },
+  "license": "MIT"
 }
