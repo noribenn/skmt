@@ -3,7 +3,9 @@ const querystring = require('querystring');
 const discord = require('discord.js');
 const client = new discord.Client();
 
-// HTTPサーバー：Glitchでの起動維持用
+// HTTPサーバー：Render/Glitch対応（PORT環境変数使用）
+const PORT = process.env.PORT || 3000;
+
 http.createServer(function(req, res) {
   if (req.method == 'POST') {
     let data = "";
@@ -25,10 +27,12 @@ http.createServer(function(req, res) {
       res.end();
     });
   } else if (req.method == 'GET') {
-    res.writeHead(200, {'Content-Type': 'text/plain'});
+    res.writeHead(200, { 'Content-Type': 'text/plain' });
     res.end('Discord Bot is active now\n');
   }
-}).listen(3000);
+}).listen(PORT, () => {
+  console.log(`HTTPサーバー起動: ポート ${PORT} で待機中`);
+});
 
 // BOT起動時
 client.on('ready', () => {
