@@ -44,16 +44,14 @@ client.on('message', message => {
   if (message.author.id === client.user.id || message.author.bot) {
     return;
   }
-
-  // メンションされたときの応答（ランダム）
   if (message.mentions.has(client.user)) {
     const replies = [
-       "なんでご飯呼んでくれなかったの？",
+      "なんでご飯呼んでくれなかったの？",
       "なんでマック行くとき声かけてくれなかったの？",
       "なんでラーメンてつ行くとき声かけてくれなかったの？",
-　    "なんで山岡家行くとき声かけてくれなかったの？",
-　    "なんで風俗行くとき声かけてくれなかったの？",
-　    "なんでコンビニ行くとき声かけてくれなかったの？",
+      "なんで山岡家行くとき声かけてくれなかったの？",
+      "なんで風俗行くとき声かけてくれなかったの？",
+      "なんでコンビニ行くとき声かけてくれなかったの？"
     ];
     const reply = replies[Math.floor(Math.random() * replies.length)];
     sendReply(message, reply);
