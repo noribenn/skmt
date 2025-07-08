@@ -30,7 +30,7 @@ http.createServer(function (req, res) {
     res.end('Discord Bot is active now\n');
   }
 }).listen(PORT, () => {
-  console.log(HTTPサーバー起動: ポート ${PORT} で待機中);
+  console.log(`HTTPサーバー起動: ポート ${PORT} で待機中`);
 });
 
 // BOT起動時
@@ -44,6 +44,8 @@ client.on('message', message => {
   if (message.author.id === client.user.id || message.author.bot) {
     return;
   }
+
+  // メンションされたときの応答（ランダム）
   if (message.mentions.has(client.user)) {
     const replies = [
       "なんでご飯呼んでくれなかったの？",
@@ -58,7 +60,7 @@ client.on('message', message => {
     return;
   }
 
-  // 特定のキーワード応答
+  // 特定のキーワード応答（にゃーん）
   if (message.content.match(/にゃ～ん|にゃーん/)) {
     const text = "にゃ～ん";
     sendMsg(message.channel.id, text);
